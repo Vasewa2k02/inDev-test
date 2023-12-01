@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Matches } from 'class-validator';
+
 import { InfoMessage } from 'src/common/enums/info-message.enum';
 
 export class UserResetPasswordDto {

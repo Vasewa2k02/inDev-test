@@ -2,13 +2,14 @@ import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { ValidationPipe } from '@nestjs/common';
+import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
+import { ValidationError } from 'class-validator';
 
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/middlewares/exeption-handler.middleware';
-import { WinstonLoggerService } from './modules/winston-logger/winston-logger.service';
 import { APP_HOST, APP_PORT } from './common/constants/env-variables';
+import { WinstonLoggerService } from './modules/winston-logger/winston-logger.service';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -16,7 +17,18 @@ async function bootstrap() {
   });
   const loggerService: WinstonLoggerService = app.get(WinstonLoggerService);
 
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      exceptionFactory: (errors: ValidationError[]) =>
+        new BadRequestException(
+          errors.reduce(
+            (message, currentError) =>
+              message + Object.values(currentError.constraints) + '. ',
+            '',
+          ),
+        ),
+    }),
+  );
   app.setGlobalPrefix('api');
   app.use(cookieParser());
   app.useGlobalFilters(new AllExceptionsFilter(loggerService));

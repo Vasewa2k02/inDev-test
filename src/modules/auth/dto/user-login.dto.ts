@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+
 import { InfoMessage } from 'src/common/enums/info-message.enum';
 
 export class UserLoginDto {
